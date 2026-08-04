@@ -1,0 +1,17 @@
+# Archivos descargados por el instalador (no se suben a git)
+downloads/*.exe
+downloads/*.zip
+downloads/*.msi
+
+# Logs
+*.log
+
+# Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+
+# Misc
+*.tmp
+*.bak
