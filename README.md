@@ -1,19 +1,19 @@
 # 🎮 Halo CE Custom Edition + Coop Evolved
 
-> Instalador automatico | by **bt pr3ttywhit3**
+> Instalador automatico — by **bt pr3ttywhit3**
 
 ## ⚡ Instalacion rapida (PowerShell — 1 linea)
 
-Abre PowerShell **como Administrador** y pega esto:
+Abre PowerShell **como Administrador** y pega:
 
 ```powershell
-irm https://raw.githubusercontent.com/x3btc/HaloCE-CoopEvolved/main/instalar_haloce_coop.bat -OutFile "C:\Users\milka\AppData\Local\Temp\haloce.bat"; Start-Process "C:\Users\milka\AppData\Local\Temp\haloce.bat" -Verb RunAs
+irm https://raw.githubusercontent.com/x3btc/HaloCE-CoopEvolved/main/instalar_haloce_coop.bat -OutFile "$env:TEMP\haloce.bat"; Start-Process "$env:TEMP\haloce.bat" -Verb RunAs
 ```
 
-O si prefieres descargarlo primero y verlo:
+O descargalo al escritorio primero:
 
 ```powershell
-irm https://raw.githubusercontent.com/x3btc/HaloCE-CoopEvolved/main/instalar_haloce_coop.bat -OutFile "C:\Users\milka\Desktop\instalar_haloce_coop.bat"
+irm https://raw.githubusercontent.com/x3btc/HaloCE-CoopEvolved/main/instalar_haloce_coop.bat -OutFile "$HOME\Desktop\instalar_haloce_coop.bat"
 ```
 
 ---
@@ -34,11 +34,25 @@ irm https://raw.githubusercontent.com/x3btc/HaloCE-CoopEvolved/main/instalar_hal
 - ⚠️ Instalado pero desactualizado → **aplica parche + mod**
 - ❌ No instalado → **instala todo desde cero**
 
+## ⚙️ Requisitos
+
+- Windows 10 / 11 (64-bit)
+- PowerShell o ejecutar el .bat como Administrador
+- Conexion a internet
+
 ## 🎮 Como jugar en co-op
 
 1. Lanza Halo CE
 2. Multijugador → Unirse a juego → busca "coop"
 3. O crea servidor: `halo.exe -window -console` → `sv_map a10 slayer`
+
+---
+
+## 🔗 Creditos
+
+- [Coop Evolved](https://github.com/Sledmine/coop-evolved) by Sledmine
+- [Mercury](https://github.com/Sledmine/mercury) by Sledmine
+- [HaloMaps.org](https://hce.halomaps.org)
 
 ---
 
