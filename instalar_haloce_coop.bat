@@ -6,16 +6,13 @@ if %errorLevel% neq 0 (
     exit /b
 )
 
-:: Ya somos admin, arrancar
 setlocal enabledelayedexpansion
+chcp 65001 >nul
 title HALO CE COOP - x3btc
-mode con: cols=70 lines=45
+mode con: cols=70 lines=50
 cls
-
-:: Fijar directorio de trabajo al directorio del .bat
 cd /d "%~dp0"
 
-:: Obtener ESC para colores ANSI
 for /f %%a in ('echo prompt $E^| cmd') do set "ESC=%%a"
 set "R=!ESC![91m"
 set "DR=!ESC![31m"
@@ -25,21 +22,22 @@ set "W=!ESC![97m"
 set "GR=!ESC![90m"
 set "C=!ESC![96m"
 set "X=!ESC![0m"
-set "B=!ESC![1m"
+set "BL=!ESC![1m"
 
 echo.
-echo !R!!B!  ##  ##  #####  ##      ######      ######  #######!X!
-echo !R!!B!  ##  ##  ##  ## ##      ##   ##     ##      ##!X!
-echo !DR!!B!  #######  #####  ##      ##   ##     ##      #####!X!
-echo !DR!!B!  ##  ##  ##  ## ##      ##   ##     ##      ##!X!
-echo !R!!B!  ##  ##  ##  ## #######  ######      ######  #######!X!
+echo !R!!BL!  ██  ██  █████  ██      ██████      ██████ ███████!X!
+echo !R!!BL!  ██  ██ ██▓▓▓██ ██     ██▓▓▓▓██    ██▓▓▓▓ ██▓▓▓▓▓!X!
+echo !DR!!BL!  ██████ ███████ ██     ██   ██    ██     █████!X!
+echo !DR!!BL!  ██▓▓██ ██▓▓▓██ ██     ██   ██    ██     ██▓▓▓!X!
+echo !R!!BL!  ██  ██ ██  ██ ███████  ██████      ██████ ███████!X!
+echo !DR!  ▓▓  ▓▓ ▓▓  ▓▓ ▓▓▓▓▓▓▓  ▓▓▓▓▓▓      ▓▓▓▓▓▓ ▓▓▓▓▓▓▓!X!
 echo.
-echo !DR!  ========================================================!X!
-echo !DR!  ##!X!   !W!!B!C O O P   E V O L V E D   I N S T A L L E R!X!   !DR!##!X!
-echo !DR!  ========================================================!X!
+echo !DR!  ████████████████████████████████████████████████████████!X!
+echo !DR!  ██!X!   !W!!BL!C O O P   E V O L V E D   I N S T A L L E R!X!   !DR!██!X!
+echo !DR!  ████████████████████████████████████████████████████████!X!
 echo.
-echo                         !DR!!B! by x3btc !X!
-echo !GR!  --------------------------------------------------------!X!
+echo                         !DR!!BL! by x3btc !X!
+echo !GR!  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓!X!
 echo.
 echo  !G![OK]!X! Administrador confirmado.
 echo.
@@ -53,9 +51,8 @@ set "OUTDATED=0"
 set "HCE_PATH="
 mkdir "!DOWNLOADS!" 2>nul
 
-:: === PASO 1: DETECCION ====================================
-echo  !C![1/5]!X! !B!Detectando Halo Custom Edition...!X!
-echo  !GR!  --------------------------------------------------------!X!
+echo  !C![1/5]!X! !BL!Detectando Halo Custom Edition...!X!
+echo  !GR!  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓!X!
 echo.
 
 for /f "tokens=2*" %%a in ('reg query "!KEY64!" /v "EXE Path" 2^>nul') do set "HCE_PATH=%%b"
@@ -66,7 +63,7 @@ if defined HCE_PATH (
     set "INSTALLED=1"
     echo  !G!  [ENCONTRADO]!X! !W!!HCE_PATH!!X!
     echo.
-    for /f "delims=" %%v in ('powershell -NoProfile -Command "try{(Get-Item '!HCE_PATH!\halo.exe').VersionInfo.FileVersion}catch{}"' 2^>nul) do set "VER=%%v"
+    for /f "delims=" %%v in ('powershell -NoProfile -Command "try{(Get-Item '!HCE_PATH!\halo.exe').VersionInfo.FileVersion}catch{}" 2^>nul') do set "VER=%%v"
     if defined VER (
         echo  !GR!  Version: !W!!VER!!X!
         echo.!VER! | findstr /C:"1.0.10" >nul 2>&1
@@ -85,9 +82,8 @@ if defined HCE_PATH (
 )
 echo.
 
-:: === PASO 2: INSTALAR HALO CE =============================
-echo  !C![2/5]!X! !B!Halo CE Custom Edition!X!
-echo  !GR!  --------------------------------------------------------!X!
+echo  !C![2/5]!X! !BL!Halo CE Custom Edition!X!
+echo  !GR!  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓!X!
 echo.
 
 if "!INSTALLED!"=="1" (
@@ -105,16 +101,22 @@ set "HCE_EXE=!DOWNLOADS!\hce_setup.exe"
 if not exist "!HCE_EXE!" (
     echo  !W!  [v]!X! Descargando Halo CE...
     echo.
-    powershell -NoProfile -Command "try{$r=Invoke-RestMethod 'https://api.github.com/repos/Sledmine/ce-setup/releases/latest';$a=$r.assets|?{$_.name -like '*.exe'}|select -First 1;if($a){Invoke-WebRequest $a.browser_download_url -OutFile '!HCE_EXE!' -UseBasicParsing;Write-Host 'OK:' $a.name}else{Write-Host 'Sin assets'}}catch{Write-Host $_.Exception.Message}" 2>nul
+    :: Obtener URL de GitHub y descargar con curl (barra de progreso)
+    for /f "delims=" %%u in ('powershell -NoProfile -Command "try{$r=Invoke-RestMethod 'https://api.github.com/repos/Sledmine/ce-setup/releases/latest';$a=$r.assets^|?{$_.name -like '*.exe'}^|select -First 1;Write-Host $a.browser_download_url}catch{}"') do set "DL_URL=%%u"
+    if defined DL_URL (
+        echo  !GR!  Fuente: GitHub Sledmine/ce-setup!X!
+        curl -L --progress-bar -o "!HCE_EXE!" "!DL_URL!"
+    ) else (
+        echo  !GR!  Fuente: HaloMaps.org!X!
+        curl -L --progress-bar -A "Mozilla/5.0" -o "!HCE_EXE!" "http://hce.halomaps.org/files/hce_setup.exe"
+    )
+    echo.
+    :: Verificar EXE real (header MZ)
     if exist "!HCE_EXE!" (
         powershell -NoProfile -Command "$b=[IO.File]::ReadAllBytes('!HCE_EXE!');if($b[0]-ne77-or$b[1]-ne90){Remove-Item '!HCE_EXE!' -Force;exit 1}" 2>nul
-        if errorlevel 1 del "!HCE_EXE!" 2>nul
-    )
-    if not exist "!HCE_EXE!" (
-        echo  !W!  [v]!X! Intentando HaloMaps.org...
-        curl -L --max-time 300 --progress-bar -A "Mozilla/5.0" -o "!HCE_EXE!" "http://hce.halomaps.org/files/hce_setup.exe" 2>nul
-        if exist "!HCE_EXE!" (
-            powershell -NoProfile -Command "$b=[IO.File]::ReadAllBytes('!HCE_EXE!');if($b[0]-ne77-or$b[1]-ne90){Remove-Item '!HCE_EXE!' -Force}" 2>nul
+        if errorlevel 1 (
+            echo  !Y!  [*]!X! Archivo invalido descartado
+            del "!HCE_EXE!" 2>nul
         )
     )
 )
@@ -148,9 +150,8 @@ if exist "!HCE_EXE!" (
 echo.
 
 :paso3
-:: === PASO 3: PARCHE 1.0.10 ================================
-echo  !C![3/5]!X! !B!Parche Oficial v1.0.10!X!
-echo  !GR!  --------------------------------------------------------!X!
+echo  !C![3/5]!X! !BL!Parche Oficial v1.0.10!X!
+echo  !GR!  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓!X!
 echo.
 
 if "!OUTDATED!"=="0" (
@@ -162,7 +163,8 @@ if "!OUTDATED!"=="0" (
 set "PATCH=!DOWNLOADS!\haloce_patch_1010.exe"
 if not exist "!PATCH!" (
     echo  !W!  [v]!X! Descargando parche v1.0.10...
-    curl -L --max-time 120 --progress-bar -o "!PATCH!" "http://hce.halomaps.org/files/haloce_patch_1_0_10.exe" 2>nul
+    curl -L --progress-bar -o "!PATCH!" "http://hce.halomaps.org/files/haloce_patch_1_0_10.exe"
+    echo.
 )
 if exist "!PATCH!" (
     echo  !W!  [->]!X! Aplicando parche...
@@ -177,9 +179,8 @@ if exist "!PATCH!" (
 echo.
 
 :paso4
-:: === PASO 4: MERCURY ======================================
-echo  !C![4/5]!X! !B!Mercury - Gestor de Mods!X!
-echo  !GR!  --------------------------------------------------------!X!
+echo  !C![4/5]!X! !BL!Mercury - Gestor de Mods!X!
+echo  !GR!  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓!X!
 echo.
 
 set "MERCURY_CMD="
@@ -195,7 +196,13 @@ if defined MERCURY_CMD (
 )
 
 echo  !W!  [v]!X! Descargando Mercury...
-powershell -NoProfile -Command "try{$r=Invoke-RestMethod 'https://api.github.com/repos/Sledmine/mercury/releases/latest';$a=$r.assets|?{$_.name -like '*.exe'}|select -First 1;Invoke-WebRequest $a.browser_download_url -OutFile '!DOWNLOADS!\mercury-setup.exe' -UseBasicParsing;Write-Host 'OK:' $a.name}catch{Write-Host $_.Exception.Message}" 2>nul
+for /f "delims=" %%u in ('powershell -NoProfile -Command "try{$r=Invoke-RestMethod 'https://api.github.com/repos/Sledmine/mercury/releases/latest';$a=$r.assets^|?{$_.name -like '*.exe'}^|select -First 1;Write-Host $a.browser_download_url}catch{}"') do set "MERC_URL=%%u"
+if defined MERC_URL (
+    curl -L --progress-bar -o "!DOWNLOADS!\mercury-setup.exe" "!MERC_URL!"
+    echo.
+) else (
+    echo  !Y!  [*]!X! No se pudo obtener URL
+)
 
 if exist "!DOWNLOADS!\mercury-setup.exe" (
     echo  !W!  [->]!X! Instalando Mercury...
@@ -219,10 +226,9 @@ echo.
 
 :paso5
 echo.
-:: === PASO 5: COOP EVOLVED =================================
-echo  !C![5/5]!X! !B!Coop Evolved!X!
-echo  !GR!  --------------------------------------------------------!X!
-echo  !GR!  Co-op campaña hasta 16 jugadores LAN/Internet!X!
+echo  !C![5/5]!X! !BL!Coop Evolved!X!
+echo  !GR!  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓!X!
+echo  !GR!  Co-op hasta 16 jugadores LAN/Internet!X!
 echo.
 
 if not defined MERCURY_CMD (
@@ -251,15 +257,15 @@ if not errorlevel 1 (
 :fin
 echo.
 echo.
-echo  !DR!  ========================================================!X!
-echo  !DR!  ##!X!                                                !DR!##!X!
-echo  !DR!  ##!X!    !G!!B! INSTALACION COMPLETADA !X!                     !DR!##!X!
-echo  !DR!  ##!X!                                                !DR!##!X!
-echo  !DR!  ##!X!  !W!Halo CE :!X! !HCE_PATH!
-echo  !DR!  ##!X!  !W!Version :!X! !G!1.0.10!X!                            !DR!##!X!
-echo  !DR!  ##!X!  !W!Co-op   :!X! !G!hasta 16 jugadores!X!               !DR!##!X!
-echo  !DR!  ##!X!                                                !DR!##!X!
-echo  !DR!  ========================================================!X!
+echo  !DR!  ████████████████████████████████████████████████████████!X!
+echo  !DR!  ██!X!                                                !DR!██!X!
+echo  !DR!  ██!X!    !G!!BL! INSTALACION COMPLETADA !X!                     !DR!██!X!
+echo  !DR!  ██!X!                                                !DR!██!X!
+echo  !DR!  ██!X!  !W!Halo CE :!X! !HCE_PATH!
+echo  !DR!  ██!X!  !W!Version :!X! !G!1.0.10!X!                            !DR!██!X!
+echo  !DR!  ██!X!  !W!Co-op   :!X! !G!hasta 16 jugadores!X!               !DR!██!X!
+echo  !DR!  ██!X!                                                !DR!██!X!
+echo  !DR!  ████████████████████████████████████████████████████████!X!
 echo.
 echo  !GR!  Como jugar:!X!
 echo  !W!  1. Lanza Halo CE!X!
@@ -270,5 +276,5 @@ echo.
 echo  !DR!                          by x3btc!X!
 echo  !GR!  github.com/x3btc/HaloCE-CoopEvolved!X!
 echo.
-echo  !GR!  --------------------------------------------------------!X!
+echo  !GR!  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓!X!
 pause
