@@ -1,4 +1,11 @@
 @echo off
+:: Auto-elevar a admin si no lo somos
+net session >nul 2>&1
+if %errorLevel% neq 0 (
+    powershell -NoProfile -Command "Start-Process cmd -ArgumentList '/c \"\"!%~f0\"\"' -Verb RunAs" 2>nul
+    exit /b
+)
+
 setlocal enabledelayedexpansion
 title HALO CE COOP - x3btc
 cls
@@ -30,13 +37,6 @@ echo                         !DR!!B! by x3btc !X!
 echo !GR!  --------------------------------------------------------!X!
 echo.
 
-:: Verificar admin
-net session >nul 2>&1
-if %errorLevel% neq 0 (
-    echo  !R![X]!X! Necesita permisos de Administrador.
-    echo  !Y![*]!X! Clic derecho -^> Ejecutar como administrador
-    pause & exit /b 1
-)
 echo  !G![OK]!X! Administrador confirmado.
 echo.
 
@@ -103,15 +103,14 @@ set "HCE_EXE=!DOWNLOADS!\hce_setup.exe"
 if not exist "!HCE_EXE!" (
     echo  !W!  [v]!X! Descargando Halo CE...
     echo.
+    :: Fuente 1: GitHub Sledmine/ce-setup
     powershell -NoProfile -Command "try{$r=Invoke-RestMethod 'https://api.github.com/repos/Sledmine/ce-setup/releases/latest';$a=$r.assets|?{$_.name -like '*.exe'}|select -First 1;if($a){Invoke-WebRequest $a.browser_download_url -OutFile '!HCE_EXE!' -UseBasicParsing;Write-Host 'Descargado:' $a.name}else{Write-Host 'Sin assets'}}catch{Write-Host 'Error:' $_.Exception.Message}" 2>nul
-    :: Verificar que sea EXE real (header MZ = 4D 5A)
+    :: Verificar header MZ
     if exist "!HCE_EXE!" (
         powershell -NoProfile -Command "$b=[IO.File]::ReadAllBytes('!HCE_EXE!');if($b[0]-ne77 -or $b[1]-ne90){Remove-Item '!HCE_EXE!' -Force;exit 1}" 2>nul
-        if errorlevel 1 (
-            echo  !Y!  [*]!X! Archivo invalido descartado
-            del "!HCE_EXE!" 2>nul
-        )
+        if errorlevel 1 del "!HCE_EXE!" 2>nul
     )
+    :: Fuente 2: HaloMaps
     if not exist "!HCE_EXE!" (
         echo  !W!  [v]!X! Intentando HaloMaps.org...
         curl -L --max-time 300 --progress-bar -A "Mozilla/5.0" -o "!HCE_EXE!" "http://hce.halomaps.org/files/hce_setup.exe" 2>nul
@@ -134,7 +133,7 @@ if exist "!HCE_EXE!" (
     echo  !Y!  [*]!X! Descarga automatica fallida.
     echo.
     echo  Descarga manual desde una de estas fuentes:
-    echo  !W!  1. https://hce.halomaps.org!X!   (busca Halo Custom Edition Game)
+    echo  !W!  1. https://hce.halomaps.org!X!   busca Halo Custom Edition Game
     echo  !W!  2. https://github.com/Sledmine/ce-setup/releases!X!
     echo.
     echo  Guarda como: !Y!!DOWNLOADS!\hce_setup.exe!X!
