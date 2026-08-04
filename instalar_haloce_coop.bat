@@ -1,16 +1,21 @@
 @echo off
-:: Auto-elevar a admin si no lo somos
 net session >nul 2>&1
 if %errorLevel% neq 0 (
-    powershell -NoProfile -Command "Start-Process cmd -ArgumentList '/c \"\"!%~f0\"\"' -Verb RunAs" 2>nul
+    echo Solicitando permisos de administrador...
+    powershell -NoProfile -Command "Start-Process -FilePath '%~dpnx0' -Verb RunAs"
     exit /b
 )
 
+:: Ya somos admin, arrancar
 setlocal enabledelayedexpansion
 title HALO CE COOP - x3btc
+mode con: cols=70 lines=45
 cls
 
-:: Obtener caracter ESC para ANSI
+:: Fijar directorio de trabajo al directorio del .bat
+cd /d "%~dp0"
+
+:: Obtener ESC para colores ANSI
 for /f %%a in ('echo prompt $E^| cmd') do set "ESC=%%a"
 set "R=!ESC![91m"
 set "DR=!ESC![31m"
@@ -36,7 +41,6 @@ echo.
 echo                         !DR!!B! by x3btc !X!
 echo !GR!  --------------------------------------------------------!X!
 echo.
-
 echo  !G![OK]!X! Administrador confirmado.
 echo.
 
@@ -47,82 +51,77 @@ set "DEF_PATH=C:\Program Files (x86)\Microsoft Games\Halo Custom Edition"
 set "INSTALLED=0"
 set "OUTDATED=0"
 set "HCE_PATH="
-mkdir "%DOWNLOADS%" 2>nul
+mkdir "!DOWNLOADS!" 2>nul
 
-:: ======= PASO 1: DETECCION ================================
+:: === PASO 1: DETECCION ====================================
 echo  !C![1/5]!X! !B!Detectando Halo Custom Edition...!X!
 echo  !GR!  --------------------------------------------------------!X!
 echo.
 
-for /f "tokens=2*" %%a in ('reg query "%KEY64%" /v "EXE Path" 2^>nul') do set "HCE_PATH=%%b"
-if not defined HCE_PATH for /f "tokens=2*" %%a in ('reg query "%KEY32%" /v "EXE Path" 2^>nul') do set "HCE_PATH=%%b"
-if not defined HCE_PATH if exist "%DEF_PATH%\halo.exe" set "HCE_PATH=%DEF_PATH%"
+for /f "tokens=2*" %%a in ('reg query "!KEY64!" /v "EXE Path" 2^>nul') do set "HCE_PATH=%%b"
+if not defined HCE_PATH for /f "tokens=2*" %%a in ('reg query "!KEY32!" /v "EXE Path" 2^>nul') do set "HCE_PATH=%%b"
+if not defined HCE_PATH if exist "!DEF_PATH!\halo.exe" set "HCE_PATH=!DEF_PATH!"
 
 if defined HCE_PATH (
     set "INSTALLED=1"
-    echo  !G!  [ENCONTRADO]!X!
-    echo       !W!!HCE_PATH!!X!
+    echo  !G!  [ENCONTRADO]!X! !W!!HCE_PATH!!X!
     echo.
     for /f "delims=" %%v in ('powershell -NoProfile -Command "try{(Get-Item '!HCE_PATH!\halo.exe').VersionInfo.FileVersion}catch{}"' 2^>nul) do set "VER=%%v"
     if defined VER (
-        echo  !GR!  Version instalada :!X! !W!!VER!!X!
+        echo  !GR!  Version: !W!!VER!!X!
         echo.!VER! | findstr /C:"1.0.10" >nul 2>&1
         if errorlevel 1 (
             set "OUTDATED=1"
-            echo  !Y!  [DESACTUALIZADA]!X! Se aplicara parche 1.0.10
+            echo  !Y!  [DESACTUALIZADA]!X! Se aplicara parche
         ) else (
-            echo  !G!  [OK]!X! Version 1.0.10 - actualizada
+            echo  !G!  [ACTUALIZADA]!X! v1.0.10
         )
     ) else (
         set "OUTDATED=1"
-        echo  !Y!  [?]!X! No se pudo verificar version - parche preventivo
+        echo  !Y!  [?]!X! Version no verificable - parche preventivo
     )
 ) else (
     echo  !Y!  [NO ENCONTRADO]!X! Se instalara desde cero
 )
 echo.
 
-:: ======= PASO 2: INSTALAR HALO CE =========================
+:: === PASO 2: INSTALAR HALO CE =============================
 echo  !C![2/5]!X! !B!Halo CE Custom Edition!X!
 echo  !GR!  --------------------------------------------------------!X!
 echo.
 
 if "!INSTALLED!"=="1" (
     if "!OUTDATED!"=="0" (
-        echo  !G!  [OK]!X! Ya instalado y actualizado - saltando
+        echo  !G!  [OK]!X! Ya instalado y actualizado
         echo.
         goto paso3
     )
-    echo  !Y!  [->]!X! Desactualizado - solo se aplica parche
+    echo  !Y!  [->]!X! Desactualizado - solo parche
     echo.
     goto paso3
 )
 
 set "HCE_EXE=!DOWNLOADS!\hce_setup.exe"
-
 if not exist "!HCE_EXE!" (
     echo  !W!  [v]!X! Descargando Halo CE...
     echo.
-    :: Fuente 1: GitHub Sledmine/ce-setup
-    powershell -NoProfile -Command "try{$r=Invoke-RestMethod 'https://api.github.com/repos/Sledmine/ce-setup/releases/latest';$a=$r.assets|?{$_.name -like '*.exe'}|select -First 1;if($a){Invoke-WebRequest $a.browser_download_url -OutFile '!HCE_EXE!' -UseBasicParsing;Write-Host 'Descargado:' $a.name}else{Write-Host 'Sin assets'}}catch{Write-Host 'Error:' $_.Exception.Message}" 2>nul
-    :: Verificar header MZ
+    powershell -NoProfile -Command "try{$r=Invoke-RestMethod 'https://api.github.com/repos/Sledmine/ce-setup/releases/latest';$a=$r.assets|?{$_.name -like '*.exe'}|select -First 1;if($a){Invoke-WebRequest $a.browser_download_url -OutFile '!HCE_EXE!' -UseBasicParsing;Write-Host 'OK:' $a.name}else{Write-Host 'Sin assets'}}catch{Write-Host $_.Exception.Message}" 2>nul
     if exist "!HCE_EXE!" (
-        powershell -NoProfile -Command "$b=[IO.File]::ReadAllBytes('!HCE_EXE!');if($b[0]-ne77 -or $b[1]-ne90){Remove-Item '!HCE_EXE!' -Force;exit 1}" 2>nul
+        powershell -NoProfile -Command "$b=[IO.File]::ReadAllBytes('!HCE_EXE!');if($b[0]-ne77-or$b[1]-ne90){Remove-Item '!HCE_EXE!' -Force;exit 1}" 2>nul
         if errorlevel 1 del "!HCE_EXE!" 2>nul
     )
-    :: Fuente 2: HaloMaps
     if not exist "!HCE_EXE!" (
         echo  !W!  [v]!X! Intentando HaloMaps.org...
         curl -L --max-time 300 --progress-bar -A "Mozilla/5.0" -o "!HCE_EXE!" "http://hce.halomaps.org/files/hce_setup.exe" 2>nul
         if exist "!HCE_EXE!" (
-            powershell -NoProfile -Command "$b=[IO.File]::ReadAllBytes('!HCE_EXE!');if($b[0]-ne77 -or $b[1]-ne90){Remove-Item '!HCE_EXE!' -Force}" 2>nul
+            powershell -NoProfile -Command "$b=[IO.File]::ReadAllBytes('!HCE_EXE!');if($b[0]-ne77-or$b[1]-ne90){Remove-Item '!HCE_EXE!' -Force}" 2>nul
         )
     )
 )
 
 if exist "!HCE_EXE!" (
-    echo  !W!  [->]!X! Ejecutando instalador de Halo CE...
-    echo  !GR!  Instala en la ruta por defecto cuando te lo pida!X!
+    echo  !W!  [->]!X! Ejecutando instalador...
+    echo  !GR!  Instala en la ruta por defecto!X!
     echo.
     start /wait "" "!HCE_EXE!"
     echo  !G!  [OK]!X! Halo CE instalado
@@ -132,26 +131,24 @@ if exist "!HCE_EXE!" (
 ) else (
     echo  !Y!  [*]!X! Descarga automatica fallida.
     echo.
-    echo  Descarga manual desde una de estas fuentes:
-    echo  !W!  1. https://hce.halomaps.org!X!   busca Halo Custom Edition Game
+    echo  Descarga manual:
+    echo  !W!  1. https://hce.halomaps.org!X!
     echo  !W!  2. https://github.com/Sledmine/ce-setup/releases!X!
     echo.
     echo  Guarda como: !Y!!DOWNLOADS!\hce_setup.exe!X!
-    echo.
     start "" "https://hce.halomaps.org"
+    echo.
     echo  Presiona una tecla cuando lo hayas descargado...
     pause >nul
-    if not exist "!HCE_EXE!" ( echo  !R!  [X]!X! Archivo no encontrado. Reinicia el script. & pause & exit /b )
+    if not exist "!HCE_EXE!" ( echo  !R![X]!X! No encontrado. Reinicia. & pause & exit /b )
     start /wait "" "!HCE_EXE!"
     echo  !G!  [OK]!X! Halo CE instalado
-    for /f "tokens=2*" %%a in ('reg query "!KEY64!" /v "EXE Path" 2^>nul') do set "HCE_PATH=%%b"
-    if not defined HCE_PATH if exist "!DEF_PATH!\halo.exe" set "HCE_PATH=!DEF_PATH!"
     set "OUTDATED=1"
 )
 echo.
 
 :paso3
-:: ======= PASO 3: PARCHE 1.0.10 ============================
+:: === PASO 3: PARCHE 1.0.10 ================================
 echo  !C![3/5]!X! !B!Parche Oficial v1.0.10!X!
 echo  !GR!  --------------------------------------------------------!X!
 echo.
@@ -166,24 +163,21 @@ set "PATCH=!DOWNLOADS!\haloce_patch_1010.exe"
 if not exist "!PATCH!" (
     echo  !W!  [v]!X! Descargando parche v1.0.10...
     curl -L --max-time 120 --progress-bar -o "!PATCH!" "http://hce.halomaps.org/files/haloce_patch_1_0_10.exe" 2>nul
-    if exist "!PATCH!" (
-        powershell -NoProfile -Command "$b=[IO.File]::ReadAllBytes('!PATCH!');if($b[0]-ne77 -or $b[1]-ne90){Remove-Item '!PATCH!' -Force}" 2>nul
-    )
 )
 if exist "!PATCH!" (
-    echo  !W!  [->]!X! Aplicando parche 1.0.10...
+    echo  !W!  [->]!X! Aplicando parche...
     start /wait "" "!PATCH!"
-    echo  !G!  [OK]!X! Halo CE v1.0.10 activo
+    echo  !G!  [OK]!X! v1.0.10 activo
 ) else (
-    echo  !Y!  [*]!X! Descarga del parche fallida. Link manual:
-    echo  !GR!      https://hce.halomaps.org/index.cfm?pg=3^&fid=6798!X!
+    echo  !Y!  [*]!X! Parche no descargado. Link:
+    echo  !GR!  https://hce.halomaps.org/index.cfm?pg=3^&fid=6798!X!
     start "" "https://hce.halomaps.org/index.cfm?pg=3&fid=6798"
     pause
 )
 echo.
 
 :paso4
-:: ======= PASO 4: MERCURY ==================================
+:: === PASO 4: MERCURY ======================================
 echo  !C![4/5]!X! !B!Mercury - Gestor de Mods!X!
 echo  !GR!  --------------------------------------------------------!X!
 echo.
@@ -200,8 +194,8 @@ if defined MERCURY_CMD (
     goto paso5
 )
 
-echo  !W!  [v]!X! Descargando Mercury desde GitHub...
-powershell -NoProfile -Command "try{$r=Invoke-RestMethod 'https://api.github.com/repos/Sledmine/mercury/releases/latest';$a=$r.assets|?{$_.name -like '*.exe'}|select -First 1;Invoke-WebRequest $a.browser_download_url -OutFile '!DOWNLOADS!\mercury-setup.exe' -UseBasicParsing;Write-Host 'OK:' $a.name}catch{Write-Host 'Error:' $_.Exception.Message}" 2>nul
+echo  !W!  [v]!X! Descargando Mercury...
+powershell -NoProfile -Command "try{$r=Invoke-RestMethod 'https://api.github.com/repos/Sledmine/mercury/releases/latest';$a=$r.assets|?{$_.name -like '*.exe'}|select -First 1;Invoke-WebRequest $a.browser_download_url -OutFile '!DOWNLOADS!\mercury-setup.exe' -UseBasicParsing;Write-Host 'OK:' $a.name}catch{Write-Host $_.Exception.Message}" 2>nul
 
 if exist "!DOWNLOADS!\mercury-setup.exe" (
     echo  !W!  [->]!X! Instalando Mercury...
@@ -210,10 +204,10 @@ if exist "!DOWNLOADS!\mercury-setup.exe" (
     where mercury >nul 2>&1
     if not errorlevel 1 set "MERCURY_CMD=mercury"
     if not defined MERCURY_CMD if exist "%LOCALAPPDATA%\mercury\mercury.exe" set "MERCURY_CMD=%LOCALAPPDATA%\mercury\mercury.exe"
-    if defined MERCURY_CMD ( echo  !G!  [OK]!X! Mercury listo ) else ( echo  !Y!  [*]!X! Reinicia si el paso 5 falla )
+    if defined MERCURY_CMD ( echo  !G!  [OK]!X! Mercury listo ) else ( echo  !Y!  [*]!X! Reinicia si paso 5 falla )
 ) else (
-    echo  !Y!  [*]!X! Descarga fallida. Descargalo desde:
-    echo  !GR!      https://github.com/Sledmine/mercury/releases/latest!X!
+    echo  !Y!  [*]!X! Descarga fallida.
+    echo  !GR!  https://github.com/Sledmine/mercury/releases/latest!X!
     start "" "https://github.com/Sledmine/mercury/releases/latest"
     echo  Instala Mercury y presiona una tecla...
     pause >nul
@@ -225,14 +219,14 @@ echo.
 
 :paso5
 echo.
-:: ======= PASO 5: COOP EVOLVED =============================
+:: === PASO 5: COOP EVOLVED =================================
 echo  !C![5/5]!X! !B!Coop Evolved!X!
 echo  !GR!  --------------------------------------------------------!X!
 echo  !GR!  Co-op campaña hasta 16 jugadores LAN/Internet!X!
 echo.
 
 if not defined MERCURY_CMD (
-    echo  !R!  [X]!X! Mercury no disponible
+    echo  !R![X]!X! Mercury no disponible
     echo  !Y!  Abre Mercury Console: mercury install coopevolved!X!
     start "" "https://github.com/Sledmine/coop-evolved"
     goto fin
@@ -250,7 +244,7 @@ if not errorlevel 1 (
     if not errorlevel 1 (
         echo  !G!  [OK]!X! Coop Evolved instalado
     ) else (
-        echo  !R!  [X]!X! Error - abre Mercury Console: mercury install coopevolved
+        echo  !R![X]!X! Error - abre Mercury Console: mercury install coopevolved
     )
 )
 
@@ -258,20 +252,20 @@ if not errorlevel 1 (
 echo.
 echo.
 echo  !DR!  ========================================================!X!
-echo  !DR!  ##!X!                                                  !DR!##!X!
-echo  !DR!  ##!X!    !G!!B! INSTALACION COMPLETADA !X!                       !DR!##!X!
-echo  !DR!  ##!X!                                                  !DR!##!X!
-echo  !DR!  ##!X!    !W!Halo CE  :!X! !HCE_PATH!
-echo  !DR!  ##!X!    !W!Version  :!X! !G!1.0.10!X!                              !DR!##!X!
-echo  !DR!  ##!X!    !W!Co-op    :!X! !G!hasta 16 jugadores (Coop Evolved)!X! !DR!##!X!
-echo  !DR!  ##!X!                                                  !DR!##!X!
+echo  !DR!  ##!X!                                                !DR!##!X!
+echo  !DR!  ##!X!    !G!!B! INSTALACION COMPLETADA !X!                     !DR!##!X!
+echo  !DR!  ##!X!                                                !DR!##!X!
+echo  !DR!  ##!X!  !W!Halo CE :!X! !HCE_PATH!
+echo  !DR!  ##!X!  !W!Version :!X! !G!1.0.10!X!                            !DR!##!X!
+echo  !DR!  ##!X!  !W!Co-op   :!X! !G!hasta 16 jugadores!X!               !DR!##!X!
+echo  !DR!  ##!X!                                                !DR!##!X!
 echo  !DR!  ========================================================!X!
 echo.
-echo  !GR!  Como jugar en co-op:!X!
+echo  !GR!  Como jugar:!X!
 echo  !W!  1. Lanza Halo CE!X!
 echo  !W!  2. Multijugador -^> Unirse a juego -^> busca coop!X!
 echo  !W!  3. Crea servidor: halo.exe -window -console!X!
-echo  !W!     luego escribe: sv_map a10 slayer!X!
+echo  !W!     luego: sv_map a10 slayer!X!
 echo.
 echo  !DR!                          by x3btc!X!
 echo  !GR!  github.com/x3btc/HaloCE-CoopEvolved!X!
