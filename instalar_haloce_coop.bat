@@ -329,7 +329,7 @@ echo  %WHITE%  3. O crea servidor: halo.exe -window -console%RESET%
 echo  %WHITE%     → sv_map a10 slayer%RESET%
 echo.
 echo  %DARKRED%                     bt pr3ttywhit3%RESET%
-echo  %GRAY%  github.com/milkaarleth2-svg/HaloCE-CoopEvolved%RESET%
+echo  %GRAY%  github.com/x3btc/HaloCE-CoopEvolved%RESET%
 echo.
 echo  %GRAY%  ─────────────────────────────────────────────────────%RESET%
 pause
